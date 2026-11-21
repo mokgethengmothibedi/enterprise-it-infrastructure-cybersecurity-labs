@@ -1,6 +1,7 @@
 # Project Status and Evidence Register
 
-**Last updated:** 2026-11-21
+**Last updated:** 2026-11-21  
+**Latest evidence:** [Active Directory PowerShell Audit Report](project-01-windows-infrastructure/04-active-directory/AD-AUDIT-REPORT.md)
 
 Status definitions: **Complete** means user-confirmed implementation; **In progress** means partially implemented or awaiting validation; **Pending** means not yet implemented; **To verify** means inspect the live state before making changes.
 
@@ -19,22 +20,27 @@ Status definitions: **Complete** means user-confirmed implementation; **In progr
 
 | Item | Status | Recorded facts / next action |
 |---|---|---|
-| Windows Server | Complete | Server VM named MT-DC01 |
-| AD DS promotion | Complete | Domain controller for ad.mothibedi.test |
+| Windows Server | Complete | MT-DC01 installed |
+| AD DS promotion | Complete | Domain ad.mothibedi.test; NetBIOS MOTHIBEDI |
 | DC address | Complete | 192.168.122.10 |
-| DNS role | In progress | Installed; record forward/reverse lookups and DC locator tests |
-| Existing OU structure | To verify | User confirmed OUs/departments visible in ADUC; exact tree not yet audited |
-| Management OU | Pending / to verify | User reported it was omitted from earlier OU creation; inspect before adding |
-| Department accounts | To verify | Exact names, enabled state and OU placement not confirmed |
-| Security groups | To verify | Exact group names and memberships not confirmed |
-| Windows 11 workstation | Complete | MT-WS01 installed and renamed |
-| Domain join | Complete | User confirmed MT-WS01 joined ad.mothibedi.test |
-| Domain sign-in / discovery / secure channel | User-reported complete | User reported checks completed without errors; raw output still needed |
-| Custom GPOs | Pending | No custom policy evidence recorded |
-| File shares and NTFS permissions | Pending | No actual share/ACL evidence recorded |
-| PowerShell administration scripts | Pending | Build after directory audit |
+| Existing department OUs | Complete | IT, Finance, HR and Admin under Departments |
+| Management OU | Pending | Not present in supplied audit; add only after confirming target design |
+| Employee accounts | Complete for four existing departments | Eight enabled users; two each in IT, Finance, HR and Admin |
+| Management employee accounts | Pending | None listed in supplied audit |
+| Department security groups | Complete for four existing departments | GG_IT_Users, GG_Finance_Users, GG_HR_Users, GG_Admin_Users; all global security groups |
+| Management security group | Pending | No GG_Management_Users listed |
+| Suspicious blank/whitespace OU | To verify | Audit shows an anomalous OU row; inspect exact DN and contents before any cleanup |
+| Workstations OU | Exists | Under Mothibedi Technologies |
+| MT-WS01 placement | To verify / design decision | Audit lists it in default CN=Computers container |
+| DNS | In progress | Role installed; collect DNS zone, SRV lookup and dcdiag evidence |
+| Windows 11 workstation | Complete | MT-WS01 installed, renamed and domain-joined per user confirmation |
+| Custom GPOs | Pending | Audit lists only Default Domain Policy and Default Domain Controllers Policy |
+| Department shares | Complete as share objects | IT, Finance, HR and Admin shares exist under C:\CompanyData |
+| Management share | Pending | Not listed in supplied audit |
+| Share and NTFS permissions | To verify | Audit contains share names/paths, not ACLs or effective-access tests |
+| PowerShell automation | Pending | Plan after directory structure and permissions are validated |
 | Backup and recovery | Pending | Not yet evidenced |
-| Scenario reports | Pending | Use the scenario template |
+| Scenario reports | In progress | Audit report committed; operational scenarios still to be performed |
 
 ## Projects 02 and 03
 
@@ -43,28 +49,14 @@ Status definitions: **Complete** means user-confirmed implementation; **In progr
 | Project 02 — Network engineering & security | Planned | Requirements, topology and addressing design |
 | Project 03 — Security operations & monitoring | Planned | Monitoring architecture and tool selection |
 
-## Next evidence to collect from MT-DC01
+## Next actions for Project 01
 
-Run these read-only PowerShell commands in an elevated PowerShell session and save the output for review:
+1. Inspect the blank/whitespace-looking OU and its children. Do not delete or rename it until understood.
+2. Confirm and implement the Management OU, employee accounts and global security group.
+3. Decide whether MT-WS01 should be moved from the default Computers container into the existing Workstations OU.
+4. Audit share permissions and NTFS ACLs for the four existing departmental shares.
+5. Implement Management file share and access rules after agreeing the access model.
+6. Design custom GPOs and verify their application on MT-WS01.
+7. Capture DNS health tests and complete scenario-based validation.
 
-~~~powershell
-Get-ADDomain | Select-Object DNSRoot, NetBIOSName, DomainMode
-Get-ADForest | Select-Object RootDomain, ForestMode
-Get-ADOrganizationalUnit -Filter * -Properties DistinguishedName |
-    Select-Object Name, DistinguishedName |
-    Sort-Object DistinguishedName
-Get-ADUser -Filter * -Properties Enabled, DistinguishedName |
-    Select-Object SamAccountName, Enabled, DistinguishedName |
-    Sort-Object DistinguishedName, SamAccountName
-Get-ADGroup -Filter * -Properties GroupScope, GroupCategory |
-    Select-Object Name, GroupScope, GroupCategory, DistinguishedName |
-    Sort-Object Name
-Get-DnsServerZone
-dcdiag /test:dns
-~~~
-
-These commands inspect the current state; they do not create or modify AD objects. Review output for sensitive information before publishing.
-
-## Verification rule
-
-Do not assume a proposed OU, user, group, share, GPO or test exists because it appeared in an earlier plan or example. Collect the live AD inventory and compare it with the target design before changing the directory. Avoid duplicate accounts and groups.
+The audit report is a snapshot of supplied output. It does not establish that share permissions, NTFS ACLs, GPO links or DNS health tests are correct.
