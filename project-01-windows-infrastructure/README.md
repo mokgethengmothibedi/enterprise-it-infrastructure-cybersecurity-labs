@@ -10,16 +10,24 @@ Mothibedi Technologies is a fictional organisation with IT, Finance, HR, Admin a
 
 Build a small Windows domain and demonstrate practical service-desk and systems-administration tasks: account lifecycle management, DNS troubleshooting, endpoint domain integration, policy management, file permissions, automation and recovery.
 
-## Environment recorded so far
+## Environment
 
 - Host: Ubuntu desktop, 16 GB RAM.
 - Virtualisation/networking: GNS3 with QEMU/KVM and libvirt NAT.
 - Lab subnet: 192.168.122.0/24; gateway: 192.168.122.1.
 - Domain controller: MT-DC01, 192.168.122.10.
-- Active Directory domain: ad.mothibedi.test.
+- Active Directory domain: ad.mothibedi.test (NetBIOS: MOTHIBEDI).
 - Workstation: MT-WS01, Windows 11, domain-joined per user confirmation.
 
-The exact OU, user and group inventory is intentionally not listed until audited on MT-DC01.
+## Current Active Directory audit findings
+
+The supplied PowerShell audit confirms four populated departments: IT, Finance, HR and Admin. Eight enabled employee accounts are listed, two in each department. Four matching global security groups exist: GG_IT_Users, GG_Finance_Users, GG_HR_Users and GG_Admin_Users.
+
+Management is not present in the supplied OU, user, group or share inventories. An anomalous blank/whitespace-looking OU row also appears and must be inspected before any cleanup.
+
+The audit lists MT-WS01 in the default Computers container rather than the custom Workstations OU. Only the two default domain GPOs are listed. Four departmental shares exist (IT, Finance, HR and Admin), but their share-level and NTFS permissions have not yet been audited.
+
+Read the complete [Active Directory PowerShell Audit Report](04-active-directory/AD-AUDIT-REPORT.md) before making directory changes.
 
 ## Workstreams
 
@@ -53,4 +61,4 @@ For each workstream include a design note, implementation steps, sanitised scree
 
 ## Immediate next step
 
-Collect the read-only AD inventory from MT-DC01. Confirm the existing OU tree, accounts, groups and memberships before adding the missing Management structure or creating employee accounts.
+Inspect the anomalous OU and audit existing share/NTFS permissions. Then complete the Management department consistently across OUs, employee accounts, security groups and file services. Do not create duplicate objects or delete unknown directory objects.
